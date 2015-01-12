@@ -13,8 +13,8 @@ Usage
 * input_bam - Input BAM file
 * output_prefix - Prefix for output files
 * SNP - SNP position, reference and alternate allele of interest in chr:position:ref:alt format, eg chr21:11106932:A:G. For deletion analysis the ref should be 'D' and alt be the size of the deletion in basepairs, eg chr11:67351213:D:64 .Coordinates are 1-based.
-* --max_depth MAX_DEPTH -  Maximum number of reads to process at the specified SNP position (defaults to 1000000)
-
+* --pair_distance PAIR_DISTANCE The distance in basepairs to search up and downstream from the specified SNP/deletion for the pair of overlapping reads (default is 500)
+* --max_depth MAX_DEPTH -  Maximum number of reads to process at the specified SNP position (default is 1000000)
 
 SNP usage
 ---------
@@ -26,11 +26,14 @@ This example uses *splitSNP* to extract and separate the **A** (reference allele
 
     BAM file 'MiSeq_20.bam' does not have an index, creating one...
     Processing 118528 reads covering SNP position chr21:11106932 in MiSeq_20.bam
-    108970 reads with the reference allele 'A' written to MiSeq_20.rs11184058.ref.A.bam
-    9254 reads with the alternate allele 'G' written to MiSeq_20.rs11184058.alt.G.bam
+    20 reads discarded for being ambiguous
+    187646 read segments with the reference allele 'A' written to MiSeq_20.rs11184058.ref.A.bam
+    11026 read segments with the alternate allele 'G' written to MiSeq_20.rs11184058.alt.G.bam
     Discarded 237 'C' alleles
     Discarded 42 'T' alleles
     Discarded 35 'N' alleles
+
+NOTE: 118,528 reads overlap the SNP *rs11184058*, however 198,672 reads are written out to the two output files as read pairs within the basepair distance specifed by the *--pair_distance* parameter (default 500) are also outputted.
 
 Deletion usage
 --------------
@@ -42,10 +45,16 @@ This example uses *splitSNP* to extract reads from the human *GSTP1* locus, sepa
 
 <!-- separate input and output -->
 
-    7120 reads with the reference sequence written to MiSeq_1_S1.GSTP1.ref.bam
-    2466 reads with the 64bp deletion written to MiSeq_1_S1.GSTP1.del.64bp.bam
+    13213 read segments with the reference sequence written to GSTP1_Split/MiSeq_1_S1/MiSeq_1_S1.ref.bam
+    4877 read segments with the 64bp deletion written to GSTP1_Split/MiSeq_1_S1/MiSeq_1_S1.del.64bp.bam
 
 
 TODOs
 -----
 * There's nothing here!
+
+CHANGELOG
+---------
+* 2014-01-12 - Added *--pair_distance* parameter so that read pairs that do not overlap the SNP/deletion are also output
+* 2014-01-8 - Added deletion mode
+* 2014-01-8 - Created initial version

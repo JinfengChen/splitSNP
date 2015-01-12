@@ -22,8 +22,11 @@ def main():
         "allele of interest in chr:position:ref:alt format, eg chr21:11106932:A:G. "
         "For deletion analysis the ref should be 'D' and alt be the size of the deletion "
         "in basepairs, eg chr11:67351213:D:64. Coordinates are 1-based.")
+    parser.add_argument("--pair_distance", type=int, default=500, help="The distance in "
+        "basepairs to search up and downstream from the specified SNP/deletion for "
+        "the pair of overlapping reads (default is 500)")
     parser.add_argument("--max_depth", type=int, default=1000000, help="Maximum number "
-        "of reads to process at the specified SNP position")
+        "of reads to process at the specified SNP position (default is 1000000)")
     args = parser.parse_args()
 
     if args.max_depth < 8000:
@@ -131,15 +134,19 @@ def main():
     if ref!="D":
         ref_filename = args.output_prefix+".ref."+ref+".bam"
         alt_filename = args.output_prefix+".alt."+alt+".bam"
+        minpos = pos-args.pair_distance
+        maxpos = pos+args.pair_distance
     else:
         ref_filename = args.output_prefix+".ref.bam"
         alt_filename = args.output_prefix+".del.%sbp.bam" % alt
+        minpos = pos-args.pair_distance
+        maxpos = pos+alt+args.pair_distance
 
     ref_bam = pysam.AlignmentFile(ref_filename, "wb", template=samfile)
     alt_bam = pysam.AlignmentFile(alt_filename, "wb", template=samfile)
     ref_count = 0
     alt_count = 0
-    for read in samfile.fetch(chrom, pos-2, pos+alt): # extra 1bp buffer
+    for read in samfile.fetch(chrom, minpos, maxpos): # extra 1bp buffer
         if read.query_name in ref_readnames:
             ref_bam.write(read)
             ref_count += 1
@@ -154,17 +161,17 @@ def main():
     # Print a summary
     if ref!="D":
         allele_count = Counter(alleles)
-        print "%s reads with the reference allele '%s' written to %s" % (
+        print "%s read segments with the reference allele '%s' written to %s" % (
             ref_count, ref, ref_filename)
-        print "%s reads with the alternate allele '%s' written to %s" % (
+        print "%s read segments with the alternate allele '%s' written to %s" % (
             alt_count, alt, alt_filename)
         for x in allele_count:
             if x != ref and x != alt:
                 print "Discarded %s '%s' alleles" % (allele_count[x], x)
     else:
-        print "%s reads with the reference sequence written to %s" % (
+        print "%s read segments with the reference sequence written to %s" % (
             ref_count, ref_filename)
-        print "%s reads with the %sbp deletion written to %s" % (
+        print "%s read segments with the %sbp deletion written to %s" % (
             alt_count, alt, alt_filename)
 
 if __name__ == '__main__':
