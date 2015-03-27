@@ -154,9 +154,11 @@ def main():
             alt_bam.write(read)
             alt_count += 1
 
+    samfile.close()
     ref_bam.close()
     alt_bam.close()
-    samfile.close()
+    pysam.index(ref_filename)
+    pysam.index(alt_filename)
 
     # Print a summary
     if ref!="D":
