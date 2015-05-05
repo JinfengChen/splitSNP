@@ -142,6 +142,10 @@ def main():
         minpos = pos-args.pair_distance
         maxpos = pos+alt+args.pair_distance
 
+    # Handle SNPs near the beginning of a chromosome
+    if minpos < 0:
+        minpos = 0
+
     ref_bam = pysam.AlignmentFile(ref_filename, "wb", template=samfile)
     alt_bam = pysam.AlignmentFile(alt_filename, "wb", template=samfile)
     ref_count = 0
